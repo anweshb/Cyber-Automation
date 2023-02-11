@@ -3,6 +3,7 @@ from hello_world import hello_world
 import time
 import os
 from zipfile import ZipFile
+import shutil
 
 import argparse
 
@@ -16,9 +17,12 @@ args = parser.parse_args()
 SIZE_LIMIT = args.SIZE_LIMIT   ##In bytes
 CHECK_INTERVAL = args.CHECK_INTERVAL ##In seconds
 
-log_dir = "logs/"
+time_label =  str(datetime.strftime(datetime.now(),"%m-%d-%Y"))
 
-FILE_NAME= log_dir + 'Zipped-SCADA-traces-' + str(datetime.strftime(datetime.now(),"%m-%d-%Y") + ".log")
+log_dir = "logs-{}/".format(time_label)
+os.mkdir(log_dir)
+
+FILE_NAME= log_dir + 'Zipped-SCADA-traces-' + time_label + ".log"
 ZIP_NAME =  FILE_NAME.replace('.log', '.zip')
 
 
@@ -47,18 +51,17 @@ def size_loop(file, size_limit, check_interval):
         t_end = time.time() + check_interval
         
         while time.time() < t_end:
+            time.sleep(2)
             hello_world(file)
 
 
 
 size_loop(file = FILE_NAME, size_limit = SIZE_LIMIT, check_interval = CHECK_INTERVAL)
 
-##Zipping the file
+##Zipping the log file
 zip_file = ZipFile(ZIP_NAME, 'w')
 zip_file.write(FILE_NAME, arcname=os.path.basename(FILE_NAME))
 os.remove(FILE_NAME)
-
-
 
 
 
