@@ -1,16 +1,25 @@
 from datetime import datetime
 from hello_world import hello_world
-from multiprocessing import Process
 import time
 import os
 from zipfile import ZipFile
 
+import argparse
 
-SIZE_LIMIT = 2e+6 ## In bytes
-CHECK_INTERVAL = 120 ##In seconds
+parser = argparse.ArgumentParser()
 
-FILE_NAME= str(datetime.strftime(datetime.now(),"%H-%M-%S") + ".log")
-ZIP_NAME = FILE_NAME.replace('.log', '.zip')
+parser.add_argument("-s","--SIZE_LIMIT", default = 2e+6, required = False, help = "Size limit in bytes", type = float)
+parser.add_argument("-i", "--CHECK_INTERVAL", default = 120, required = False, help = "Check interval in seconds", type = int)
+
+args = parser.parse_args()
+
+SIZE_LIMIT = args.SIZE_LIMIT   ##In bytes
+CHECK_INTERVAL = args.CHECK_INTERVAL ##In seconds
+
+log_dir = "logs/"
+
+FILE_NAME= log_dir + 'Zipped-SCADA-traces-' + str(datetime.strftime(datetime.now(),"%m-%d-%Y") + ".log")
+ZIP_NAME =  FILE_NAME.replace('.log', '.zip')
 
 
 
@@ -47,7 +56,7 @@ size_loop(file = FILE_NAME, size_limit = SIZE_LIMIT, check_interval = CHECK_INTE
 ##Zipping the file
 zip_file = ZipFile(ZIP_NAME, 'w')
 zip_file.write(FILE_NAME)
-    
+os.remove(FILE_NAME)
 
 
 
