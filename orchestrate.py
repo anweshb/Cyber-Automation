@@ -55,7 +55,7 @@ size_loop(file = FILE_NAME, size_limit = SIZE_LIMIT, check_interval = CHECK_INTE
 
 ##Zipping the file
 zip_file = ZipFile(ZIP_NAME, 'w')
-zip_file.write(FILE_NAME)
+zip_file.write(FILE_NAME, arcname=os.path.basename(FILE_NAME))
 os.remove(FILE_NAME)
 
 
