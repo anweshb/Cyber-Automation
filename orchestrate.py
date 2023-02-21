@@ -53,7 +53,7 @@ def run(size_limit, check_interval):
             pass
         
         ## Starting hello_world.py
-        p = subprocess.Popen(['python3.9', 'hello_world.py','-f', FILE_NAME])
+        p = subprocess.Popen(['python', 'hello_world.py','-f', FILE_NAME])
 
         ## Checking size limit in intervals
         while not check_size(FILE_NAME, size_limit):
