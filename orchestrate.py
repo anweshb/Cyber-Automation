@@ -1,12 +1,13 @@
 from datetime import datetime
-from hello_world import hello_world
 import time
 import os
+import zipfile
 from zipfile import ZipFile
-import shutil
-
+import subprocess
 import argparse
 
+
+#Setting up command line integration
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-s","--SIZE_LIMIT", default = 2e+6, required = False, help = "Size limit in bytes", type = float)
@@ -17,17 +18,13 @@ args = parser.parse_args()
 SIZE_LIMIT = args.SIZE_LIMIT   ##In bytes
 CHECK_INTERVAL = args.CHECK_INTERVAL ##In seconds
 
-time_label =  str(datetime.strftime(datetime.now(),"%m-%d-%Y"))
+log_dir = "logs/"
 
-log_dir = "logs-{}/".format(time_label)
-os.mkdir(log_dir)
-
-FILE_NAME= log_dir + 'Zipped-SCADA-traces-' + time_label + ".log"
-ZIP_NAME =  FILE_NAME.replace('.log', '.zip')
-
-
-
-print("FILENAME:",FILE_NAME)
+#Make logs folder, skip if it exists
+try:
+    os.mkdir(log_dir)
+except FileExistsError:
+    pass
 
 
 def check_size(file :str , size_limit : int):
@@ -40,32 +37,52 @@ def check_size(file :str , size_limit : int):
     else:
         False
 
-def size_loop(file, size_limit, check_interval):
 
-    ## Creating an empty file
-    hello_world(file, make_new = True)
 
-    while not check_size(file, size_limit):
+def run(size_limit, check_interval):
 
-        ## We only check file size every few seconds
-        t_end = time.time() + check_interval
+    while True:
         
-        while time.time() < t_end:
-            time.sleep(2)
-            hello_world(file)
+        time_label =  str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y"))
+        FILE_NAME= log_dir + 'logfile-' + time_label + ".log"
+        ZIP_NAME =  FILE_NAME.replace('.log', '.zip')
+
+        ## Creating an empty file
+        
+        with open(FILE_NAME, 'w') as fp:
+            pass
+        
+        ## Starting hello_world.py
+        p = subprocess.Popen(['python3.9', 'hello_world.py','-f', FILE_NAME])
+
+        ## Checking size limit in intervals
+        while not check_size(FILE_NAME, size_limit):
+            # print("SLEEPING")
+            time.sleep(check_interval)
+
+        ## Ending hello_world.py execution
+        p.terminate()
+        # print(os.path.getsize(FILE_NAME))
+        print("TERMINATED")
+
+        ## Zipping the logfile then removing the original logfile
+        zip_file = ZipFile(ZIP_NAME, 'w', zipfile.ZIP_DEFLATED)
+        zip_file.write(FILE_NAME, arcname=os.path.basename(FILE_NAME))
+        os.remove(FILE_NAME)
+    
 
 
 
-size_loop(file = FILE_NAME, size_limit = SIZE_LIMIT, check_interval = CHECK_INTERVAL)
+run(SIZE_LIMIT, CHECK_INTERVAL)
 
-##Zipping the log file
-zip_file = ZipFile(ZIP_NAME, 'w')
-zip_file.write(FILE_NAME, arcname=os.path.basename(FILE_NAME))
-os.remove(FILE_NAME)
 
 
 
     
+
+
+
+
 
 
 
