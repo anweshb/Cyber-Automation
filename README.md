@@ -10,6 +10,6 @@ python orchestrate.py -s {size limit in bytes} -i {check interval in seconds}
 
 ## The logfiles are stored in the 'logs/' folder which is created upon running the program for the first time.
 
-## The filename format for the log files is "Hour-Minute-Second-MM-DD-YY.log/zip"
+## The filename format for the log files is "Hour-Minute-Second-MM-DD-YY"
 
 ## To end execution, end it from the terminal
