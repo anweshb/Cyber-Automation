@@ -56,7 +56,7 @@ def run(size_limit, check_interval):
 
             
             ## Starting run_procmon.ps1
-            run_procmon = subprocess.Popen(['powershell.exe', '-File','run_procmon.ps1', CONFIG_FILE, PML_LOG])
+            run_procmon = subprocess.Popen(['powershell.exe', '-File','run_procmon.ps1', procmon_location, CONFIG_FILE, PML_LOG])
             # time.sleep(15)
 
             ## Checking size limit in intervals
@@ -65,10 +65,10 @@ def run(size_limit, check_interval):
                 time.sleep(check_interval)
 
             ## Stopping tracing on Procmon
-            stop_trace = subprocess.Popen(['powershell.exe', '-File', 'stop_trace.ps1'])
+            stop_trace = subprocess.Popen(['powershell.exe', '-File', 'stop_trace.ps1', procmon_location])
             print("TERMINATED")
             time.sleep(15)
-            convert_pml_csv = subprocess.Popen(['powershell.exe', '-File', 'convert-pml-csv.ps1', PML_LOG, CSV_LOG])      
+            convert_pml_csv = subprocess.Popen(['powershell.exe', '-File', 'convert-pml-csv.ps1', procmon_location, PML_LOG, CSV_LOG])      
             convert_pml_csv.communicate()
 
             # time.sleep(10)
