@@ -5,7 +5,8 @@ import zipfile
 from zipfile import ZipFile
 import subprocess
 import argparse
-import psutil
+
+
 #Setting up command line integration
 parser = argparse.ArgumentParser()
 
@@ -18,7 +19,7 @@ SIZE_LIMIT = args.SIZE_LIMIT   ##In bytes
 CHECK_INTERVAL = args.CHECK_INTERVAL ##In seconds
 CONFIG_FILE = args.CONFIG_FILE
 
-log_dir = "C:\\Users\\tingwei\\Desktop\\Cyber Automation Code\\Cyber-Automation\\logs\\"
+log_dir = "logs\\"
 
 #Make logs folder, skip if it exists
 try:

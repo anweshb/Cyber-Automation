@@ -12,4 +12,4 @@ python orchestrate.py -s {size limit in bytes} -i {check interval in seconds}
 
 ## The filename format for the log files is "Hour-Minute-Second-MM-DD-YY"
 
-## To end execution, end it from the terminal
+## To end execution, end it from the terminal by pressing Ctrl + C
