@@ -6,11 +6,12 @@ from zipfile import ZipFile
 import subprocess
 import argparse
 import psutil
+from pathlib import Path
 
 #USER CONFIGURATIONS : 
 default_size = 2e+6                 #default storage size (2MB)
 default_check_interval = 5          #default time interval to sleep between size checks
-default_config_file = "config.pmc"    #Default PROCMON configuration file
+default_config_file = "C:/Users/tingwei/Desktop/ProcessMonitor/ProcmonConfiguration-capture-chrome.pmc"    #Default PROCMON configuration file
 procmon_location = "C:/Users/tingwei/Desktop/ProcessMonitor/Procmon.exe"    #default procmon location
 
 #Setting up command line integration
@@ -43,6 +44,21 @@ def check_size(file :str , size_limit : int):
         False
 
 
+def used_by_process(file_path):
+    ## Function to wait until a file is stopped being used by ongoing processes
+    while True:
+                for proc in psutil.process_iter(['name','open_files']):
+                    try:
+                        for file in proc.open_files():
+                            if file.path == file_path:
+                                time.sleep(2)
+                            else:
+                                continue
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                        pass
+                        
+                break
+
 
 def run(size_limit, check_interval):
 
@@ -57,28 +73,47 @@ def run(size_limit, check_interval):
             
             ## Starting run_procmon.ps1
             run_procmon = subprocess.Popen(['powershell.exe', '-File','run_procmon.ps1', procmon_location, CONFIG_FILE, PML_LOG])
-            # time.sleep(15)
 
             ## Checking size limit in intervals
+            #while True:
+             #   try:
+              #      while not check_size(PML_LOG, size_limit):
+               #         # print("SLEEPING")
+                #        time.sleep(check_interval)
+                #except FileNotFoundError:
+                 #   continue
+                #break 
+            
+            log_file = Path(PML_LOG)
+            
+            while not log_file.exists():
+                time.sleep(1)
+               
             while not check_size(PML_LOG, size_limit):
                 # print("SLEEPING")
                 time.sleep(check_interval)
-
+            
+              
+            
+            
             ## Stopping tracing on Procmon
             stop_trace = subprocess.Popen(['powershell.exe', '-File', 'stop_trace.ps1', procmon_location])
-            print("TERMINATED")
-            time.sleep(15)
+            stop_trace.communicate()
+            
+            used_by_process(PML_LOG)
+                
             convert_pml_csv = subprocess.Popen(['powershell.exe', '-File', 'convert-pml-csv.ps1', procmon_location, PML_LOG, CSV_LOG])      
             convert_pml_csv.communicate()
-
-            # time.sleep(10)
-
+            
+            used_by_process(CSV_LOG)
+            
             ## Zipping the logfile then removing the original logfile
+            #time.sleep(5)
             zip_file = ZipFile(ZIP_NAME, 'w', zipfile.ZIP_DEFLATED)
             zip_file.write(CSV_LOG, arcname=os.path.basename(CSV_LOG))
             os.remove(PML_LOG)
             os.remove(CSV_LOG)
-            break
+             #break
     
     except KeyboardInterrupt:
         to_kill = ['Procmon.exe', 'Procmon64.exe']
@@ -94,7 +129,6 @@ run(SIZE_LIMIT, CHECK_INTERVAL)
 
 
     
-
 
 
 
