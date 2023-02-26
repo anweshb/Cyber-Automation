@@ -7,12 +7,18 @@ import subprocess
 import argparse
 import psutil
 from pathlib import Path
+import json
+
+
+with open('config.json') as config_file:
+    data = json.load(config_file)
+
 
 #USER CONFIGURATIONS : 
-default_size = 2e+6                 #default storage size (2MB)
-default_check_interval = 5          #default time interval to sleep between size checks
-default_config_file = "C:/Users/tingwei/Desktop/ProcessMonitor/ProcmonConfiguration-capture-chrome.pmc"    #Default PROCMON configuration file
-procmon_location = "C:/Users/tingwei/Desktop/ProcessMonitor/Procmon.exe"    #default procmon location
+default_size = data["size_limit"]                 #default storage size at which we wish to stop writing the log
+default_check_interval = data["check_interval"]          #default time interval to sleep between size checks
+default_config_file = data["procmon_config_file"]    #Default PROCMON configuration file
+procmon_location = data["procmon_location"]    #default procmon location
 
 #Setting up command line integration
 parser = argparse.ArgumentParser()

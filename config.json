@@ -1,0 +1,6 @@
+{
+    "size_limit" : 2e+6,                 
+    "check_interval" : 5,          
+    "procmon_config_file" : "C:/Users/tingwei/Desktop/ProcessMonitor/ProcmonConfiguration-capture-chrome.pmc",
+    "procmon_location" : "C:/Users/tingwei/Desktop/ProcessMonitor/Procmon.exe"    
+}
