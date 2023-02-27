@@ -55,8 +55,9 @@ def check_size(file :str , size_limit : int):
 
 def poll_if_used_by_process(file_path):
     ## Function to wait until a file is stopped being used by an ongoing Procmon process, e.g a pml or csv file
+    
     max_wait_time = 60  #60 seconds. We think it shouldn't take more than 60 seconds. Anwesh check if converting 500 MB files, will take more than 60s.
-
+    
     while True:
         
         start_time = time.time()
@@ -65,15 +66,15 @@ def poll_if_used_by_process(file_path):
             try:
                 for file in proc.open_files():
                     if file.path == file_path:
-                        if (time.time() - start_time) < max_wait_time:
-                            time.sleep(1)
-                        else:
-                            return "Not Responding"
+                        time.sleep(1)
                     else:
                         continue
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
-                
+
+        if (time.time() - start_time) > max_wait_time:
+            return "Not Responding"
+
         break
 
 
@@ -130,10 +131,9 @@ def convert_pml_to_csv_and_zip(PML_LOG, CSV_LOG, ZIP_NAME):
     print("Polling if CSV log is being used", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
     
     status = poll_if_used_by_process(CSV_LOG)
-
     if status == "Not Responding":
         return status
-    
+
     ## Zipping the logfile then removing the original logfile
     print("Now zipping the file", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
     zip_file = ZipFile(ZIP_NAME, 'w', zipfile.ZIP_DEFLATED)
@@ -163,20 +163,19 @@ def run(size_limit, check_interval):
 
             ## Make sure Procmon is done using the completed pml log
             print("Running poll if used for pml", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
-            
             status = poll_if_used_by_process(completed_pml_log)
             
             if status == "Not Responding":
-                print("The program is not responding! Exitting the program")
+                print("Procmon is not responding! Exiting the program")
                 break
 
             ## Converted completed pml to csv and zip it
             status = convert_pml_to_csv_and_zip(completed_pml_log, completed_csv_log, completed_zip_name)
 
             if status == "Not Responding":
-                print("The program is not responding! Exitting the program")
+                print("Procmon is not responding! Exiting the program")
                 break
-
+        
             if user_terminate_action > 0:
                 break
 
