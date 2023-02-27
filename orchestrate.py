@@ -142,13 +142,14 @@ def run(size_limit, check_interval):
             
 
             #completed_pml_log, completed_csv_log, completed_zip_name = watch_and_stop(size_limit, check_interval, current_pml_log, current_csv_log, current_zip_name)
-            
 
             if user_terminate_action > 0:
                 break
     
     except KeyboardInterrupt:
         
+        global user_terminate_action
+
         user_terminate_action += 1
         print("Now gracefully shutting down SCADA Dynamic Analysis..... Wait a minute, or press Ctrl C again to shut down ungracefully")
 
