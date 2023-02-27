@@ -157,7 +157,7 @@ def run(size_limit, check_interval):
     
     except KeyboardInterrupt:
         
-        global user_terminate_action
+        #global user_terminate_action
 
         user_terminate_action += 1
         print("Now gracefully shutting down SCADA Dynamic Analysis..... Wait a minute, or press Ctrl C again to shut down ungracefully")
