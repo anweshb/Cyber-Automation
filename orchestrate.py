@@ -67,6 +67,13 @@ def poll_if_used_by_process(file_path):
                         
                 break
 
+
+def is_procmon_running():
+    for p in psutil.process_iter(['name']):
+        if p.info['name'] in ['Procmon.exe', 'Procmon64.exe']:
+            return True
+    return False
+
 def setup_and_trace():
 
     time_label =  str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y"))
@@ -95,7 +102,8 @@ def watch_and_stop(size_limit, check_interval, CURRENT_PML_LOG, CURRENT_CSV_LOG,
     stop_trace = subprocess.Popen(['powershell.exe', '-File', 'stop_trace.ps1', procmon_location])
     stop_trace.communicate()    #Some weird inter-process communication, between Python and PowerShell
 
-#    used_by_process(CURRENT_PML_LOG)
+    while is_procmon_running():
+        time.sleep(1)
 
     COMPLETED_PML_LOG = CURRENT_PML_LOG
     COMPLETED_CSV_LOG = CURRENT_CSV_LOG
