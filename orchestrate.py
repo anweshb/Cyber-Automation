@@ -131,7 +131,7 @@ def convert_pml_to_csv_and_zip(PML_LOG, CSV_LOG, ZIP_NAME):
     
     status = poll_if_used_by_process(CSV_LOG)
 
-    if status == "Not Responding"
+    if status == "Not Responding":
         return status
     
     ## Zipping the logfile then removing the original logfile
