@@ -40,8 +40,9 @@ try:
 except FileExistsError:
     pass
 
-user_terminate_action = 0 #This is to enable graceful or ungraceful shutdown of the program
+global user_terminate_action #This is to enable graceful or ungraceful shutdown of the program
 
+user_terminate_action = 0
 
 def check_size(file :str , size_limit : int):
 
