@@ -114,13 +114,16 @@ def watch_and_stop(size_limit, check_interval, CURRENT_PML_LOG, CURRENT_CSV_LOG,
 
 
 def convert_pml_to_csv_and_zip(PML_LOG, CSV_LOG, ZIP_NAME):
+    print("Converting PML to CSV", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
     convert_pml_csv = subprocess.Popen(['powershell.exe', '-File', 'convert-pml-csv.ps1', procmon_location, PML_LOG, CSV_LOG])      
     convert_pml_csv.communicate()
     
     ## Make sure Procmon is done converting .pml to CSV and has let go of the CSV log
+    print("Polling if CSV log is being used", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
     poll_if_used_by_process(CSV_LOG)
     
     ## Zipping the logfile then removing the original logfile
+    print("Now zipping the file", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
     zip_file = ZipFile(ZIP_NAME, 'w', zipfile.ZIP_DEFLATED)
     zip_file.write(CSV_LOG, arcname=os.path.basename(CSV_LOG))
     os.remove(PML_LOG)
@@ -135,15 +138,19 @@ def run(size_limit, check_interval):
         #Start the first/current tracing
         current_pml_log, current_csv_log, current_zip_name = setup_and_trace()
         while True:
-                
+
+            print("Running watch and stop", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))    
             completed_pml_log, completed_csv_log, completed_zip_name = watch_and_stop(size_limit, check_interval, current_pml_log, current_csv_log, current_zip_name)
             
+
             ##Starting the next tracing. We want to start tracing the next instance immediately after the first/current one finishes, i.e. before we start zipping its logs, to minimize missed logs/events
+            print("Running setup_and_trace", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
             current_pml_log, current_csv_log, current_zip_name = setup_and_trace()
             procmon_instantiation_counter += 1
             print("Procmon instantiation count:", procmon_instantiation_counter, str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
 
             ## Make sure Procmon is done using the completed pml log
+            print("Running poll if used for pml", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
             poll_if_used_by_process(completed_pml_log)
             
             ## Converted completed pml to csv and zip it
