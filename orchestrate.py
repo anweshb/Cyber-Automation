@@ -54,19 +54,27 @@ def check_size(file :str , size_limit : int):
 
 
 def poll_if_used_by_process(file_path):
-    ## Function to wait until a file is stopped being used by ongoing processes
+    ## Function to wait until a file is stopped being used by an ongoing Procmon process, e.g a pml or csv file
+    max_wait_time = 60  #60 seconds. We think it shouldn't take more than 60 seconds. Anwesh check if converting 500 MB files, will take more than 60s.
+
     while True:
-                for proc in psutil.process_iter(['name','open_files']):
-                    try:
-                        for file in proc.open_files():
-                            if file.path == file_path:
-                                time.sleep(1)
-                            else:
-                                continue
-                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                        pass
-                        
-                break
+        
+        start_time = time.time()
+
+        for proc in psutil.process_iter(['name','open_files']):
+            try:
+                for file in proc.open_files():
+                    if file.path == file_path:
+                        if (time.time() - start_time) < max_wait_time:
+                            time.sleep(1)
+                        else:
+                            return "Not Responding"
+                    else:
+                        continue
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+                
+        break
 
 
 def is_procmon_running():
@@ -120,7 +128,11 @@ def convert_pml_to_csv_and_zip(PML_LOG, CSV_LOG, ZIP_NAME):
     
     ## Make sure Procmon is done converting .pml to CSV and has let go of the CSV log
     print("Polling if CSV log is being used", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
-    poll_if_used_by_process(CSV_LOG)
+    
+    status = poll_if_used_by_process(CSV_LOG)
+
+    if status == "Not Responding"
+        return status
     
     ## Zipping the logfile then removing the original logfile
     print("Now zipping the file", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
@@ -133,17 +145,16 @@ def convert_pml_to_csv_and_zip(PML_LOG, CSV_LOG, ZIP_NAME):
 def run(size_limit, check_interval):
 
     global user_terminate_action
-    try:
-        procmon_instantiation_counter = 1
-        print("Procmon instantiation counter:", procmon_instantiation_counter, str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
-        #Start the first/current tracing
-        current_pml_log, current_csv_log, current_zip_name = setup_and_trace()
-        while True:
-
+    procmon_instantiation_counter = 1
+    print("Procmon instantiation counter:", procmon_instantiation_counter, str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
+    #Start the first/current tracing
+    current_pml_log, current_csv_log, current_zip_name = setup_and_trace()
+    
+    while True:
+        try:
             print("Running watch and stop", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))    
             completed_pml_log, completed_csv_log, completed_zip_name = watch_and_stop(size_limit, check_interval, current_pml_log, current_csv_log, current_zip_name)
-            
-
+        
             ##Starting the next tracing. We want to start tracing the next instance immediately after the first/current one finishes, i.e. before we start zipping its logs, to minimize missed logs/events
             print("Running setup_and_trace", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
             current_pml_log, current_csv_log, current_zip_name = setup_and_trace()
@@ -152,31 +163,42 @@ def run(size_limit, check_interval):
 
             ## Make sure Procmon is done using the completed pml log
             print("Running poll if used for pml", str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
-            poll_if_used_by_process(completed_pml_log)
             
-            ## Converted completed pml to csv and zip it
-            convert_pml_to_csv_and_zip(completed_pml_log, completed_csv_log, completed_zip_name)
+            status = poll_if_used_by_process(completed_pml_log)
             
+            if status == "Not Responding":
+                print("The program is not responding! Exitting the program")
+                break
 
-            #completed_pml_log, completed_csv_log, completed_zip_name = watch_and_stop(size_limit, check_interval, current_pml_log, current_csv_log, current_zip_name)
+            ## Converted completed pml to csv and zip it
+            status = convert_pml_to_csv_and_zip(completed_pml_log, completed_csv_log, completed_zip_name)
+
+            if status == "Not Responding":
+                print("The program is not responding! Exitting the program")
+                break
 
             if user_terminate_action > 0:
                 break
+
+        except KeyboardInterrupt:
     
-    except KeyboardInterrupt:
-    
-        user_terminate_action += 1
-        print("Now gracefully shutting down SCADA Dynamic Analysis..... Wait a minute, or press Ctrl C again to shut down ungracefully")
+            user_terminate_action += 1
+            print("Now gracefully shutting down SCADA Dynamic Analysis..... Wait a minute, or press Ctrl C again to shut down ungracefully")
 
+            #Ungraceful shutdown since user pressed Ctrl C more than once
+            if user_terminate_action > 1:
+                to_kill = ['Procmon.exe', 'Procmon64.exe']
+                ## Shutdown procmon instances upon Keyboard Interrupt
+                for proc in psutil.process_iter():
+                    if proc.name() in to_kill:
+                        proc.kill()
 
-        if user_terminate_action > 1:
-            to_kill = ['Procmon.exe', 'Procmon64.exe']
-        
-            ## Shutdown procmon instances upon Keyboard Interrupt
-            for proc in psutil.process_iter():
-                if proc.name() in to_kill:
-                    proc.kill()
-
+    #Graceful shutdown after while loop breaks
+    to_kill = ['Procmon.exe', 'Procmon64.exe']
+    ## Shutdown procmon instances upon Keyboard Interrupt
+    for proc in psutil.process_iter():
+        if proc.name() in to_kill:
+            proc.kill()
         
         
         
