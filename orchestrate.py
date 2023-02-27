@@ -132,6 +132,7 @@ def convert_pml_to_csv_and_zip(PML_LOG, CSV_LOG, ZIP_NAME):
 
 def run(size_limit, check_interval):
 
+    global user_terminate_action
     try:
         procmon_instantiation_counter = 1
         print("Procmon instantiation counter:", procmon_instantiation_counter, str(datetime.strftime(datetime.now(),"%H-%M-%S-%m-%d-%Y")))
@@ -163,9 +164,7 @@ def run(size_limit, check_interval):
                 break
     
     except KeyboardInterrupt:
-        
-        #global user_terminate_action
-
+    
         user_terminate_action += 1
         print("Now gracefully shutting down SCADA Dynamic Analysis..... Wait a minute, or press Ctrl C again to shut down ungracefully")
 
