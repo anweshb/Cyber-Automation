@@ -79,16 +79,6 @@ def run(size_limit, check_interval):
             
             ## Starting run_procmon.ps1
             run_procmon = subprocess.Popen(['powershell.exe', '-File','run_procmon.ps1', procmon_location, CONFIG_FILE, PML_LOG])
-
-            ## Checking size limit in intervals
-            #while True:
-             #   try:
-              #      while not check_size(PML_LOG, size_limit):
-               #         # print("SLEEPING")
-                #        time.sleep(check_interval)
-                #except FileNotFoundError:
-                 #   continue
-                #break 
             
             log_file = Path(PML_LOG)
             
@@ -96,7 +86,6 @@ def run(size_limit, check_interval):
                 time.sleep(1)
                
             while not check_size(PML_LOG, size_limit):
-                # print("SLEEPING")
                 time.sleep(check_interval)
             
               
@@ -114,7 +103,6 @@ def run(size_limit, check_interval):
             used_by_process(CSV_LOG)
             
             ## Zipping the logfile then removing the original logfile
-            #time.sleep(5)
             zip_file = ZipFile(ZIP_NAME, 'w', zipfile.ZIP_DEFLATED)
             zip_file.write(CSV_LOG, arcname=os.path.basename(CSV_LOG))
             os.remove(PML_LOG)
