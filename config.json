@@ -1,6 +1,9 @@
+
 {
-    "size_limit" : 2e+6,                 
-    "check_interval" : 5,          
+    "EXPLANATION" : "This is an explanation of the fields below, not to be modified. Unless you know what you're doing, the only thing you may have to change is the Procmon config file and Procmon location. For logging concerns, you may also change the size limit. Size limit refers to the maximum file size (in megabytes) the Procmon logs are allowed to reached before it is zipped and stored. check_interval is the time in seconds our daemon has to poll to check if the file size limit is reached.",
+    "EXPLANATION 2" : "Based on using the open-source SCADABR suite running for 30 minutes produced about 1,000,000 log lines which equals around 200 MB, which we think is a good size limit.",
+    "size_limit" : 2,                
+    "check_interval" : 5,           
     "procmon_config_file" : "C:/Users/tingwei/Desktop/ProcessMonitor/ProcmonConfiguration-capture-chrome.pmc",
     "procmon_location" : "C:/Users/tingwei/Desktop/ProcessMonitor/Procmon.exe"    
 }
